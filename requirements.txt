@@ -1,3 +1,4 @@
 discord.py[voice]==2.5.2
 python-dotenv==1.1.1
 yt_dlp==2025.06.30
+validators==0.35.0

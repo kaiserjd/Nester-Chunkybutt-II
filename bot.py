@@ -5,9 +5,10 @@ import os
 import yt_dlp
 import asyncio
 import logging
+import validators
 from collections import deque
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger("nester")
 
 #log.info("Starting MusicBot. Logged in as %s", self.user)
 log.info("Discord.py version: %s", discord.version_info)
@@ -45,7 +46,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume = 0.5):
         super().__init__(source, volume)
         # self.requester = 
-        
+
         self.data = data
 
         self.title = data.get('title')
@@ -141,6 +142,9 @@ async def play(interaction: discord.Interaction, query: str):
     elif voice_client.channel != voice_channel:
         await voice_client.move_to(voice_channel)
 
+    #if validators.url(query):
+    #    search_query = query
+    #else:
     search_query = "ytsearch1: " + query
 
     #loop = asyncio.get_running_loop()
@@ -148,6 +152,7 @@ async def play(interaction: discord.Interaction, query: str):
     results = await search_async(search_query)
     #results = await search_ytdlp_async(search_query, ytdl_options)
     tracks = results.get("entries", [])
+    print(tracks)
 
     if tracks is None:
         await interaction.response.send_message("No results found for query.")
@@ -235,7 +240,6 @@ async def leave(interaction: discord.Interaction):
 
 # Not a command. Helper function to play the next song in the queue.
 async def play_next(voice_client, channel):
-    global queue
     if queue:
         audio_url, title = queue.popleft()
 
@@ -249,11 +253,11 @@ async def play_next(voice_client, channel):
         voice_client.play(source, after=after_play)
 
         asyncio.create_task(channel.send(f'Now playing: "{title}"'))
+    # No more songs in queue, time to leave
     else:
         asyncio.create_task(channel.send(f'All songs have finished playing. Goodbye!'))
         await voice_client.disconnect()
-        queue = deque()
-
+        queue.clear()
 
 # Actually run the bot
 client.run(os.getenv('BOT_TOKEN'))
