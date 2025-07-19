@@ -41,14 +41,6 @@ ffmpeg_options = {
 
 ytdl = yt_dlp.YoutubeDL(ytdl_options)
 
-class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume = 0.5):
-        super().__init__(source, volume)
-
-        self.data = data
-
-        self.title = data.get('title')
-        self.url = data.get('url')
 
 class MusicBot(discord.Client):
     def __init__(self, *, intents: discord.Intents):
