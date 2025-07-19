@@ -142,29 +142,33 @@ async def play(interaction: discord.Interaction, query: str):
     elif voice_client.channel != voice_channel:
         await voice_client.move_to(voice_channel)
 
-    #if validators.url(query):
-    #    search_query = query
-    #else:
-    search_query = "ytsearch1: " + query
+    if validators.url(query):
 
-    #loop = asyncio.get_running_loop()
-    #results = await loop.run_in_executor(None, ytdl.extract_info(search_query, download=False))
-    results = await search_async(search_query)
-    #results = await search_ytdlp_async(search_query, ytdl_options)
-    tracks = results.get("entries", [])
-    print(tracks)
+        queryinfo = ytdl.extract_info(query, )
+        audio_url = queryinfo.get('url', None)
+        #print(f'Audio URL: {audio_url}')
+        title = queryinfo.get('title', None)
+    else:
+        search_query = "ytsearch1: " + query
 
-    if tracks is None:
-        await interaction.response.send_message("No results found for query.")
-        return
-    
-    first_track = tracks[0]
-    audio_url = first_track["url"]
-    title = first_track.get("title", "Untitled")
+        #loop = asyncio.get_running_loop()
+        #results = await loop.run_in_executor(None, ytdl.extract_info(search_query, download=False))
+        results = await search_async(search_query)
+        #results = await search_ytdlp_async(search_query, ytdl_options)
+        tracks = results.get("entries", [])
+        #print(tracks)
+
+        if tracks is None:
+            await interaction.response.send_message("No results found for query.")
+            return
+        
+        first_track = tracks[0]
+        audio_url = first_track["url"]
+        title = first_track.get("title", "Untitled")
 
 
     queue.append((audio_url, title))
-    print(queue)
+   #print(queue)
 
     if voice_client.is_playing() or voice_client.is_paused():
         await interaction.followup.send(f'Added to queue: {title}')
