@@ -10,7 +10,6 @@ from collections import deque
 
 log: logging.Logger = logging.getLogger("nester")
 
-#log.info("Starting MusicBot. Logged in as %s", self.user)
 log.info("Discord.py version: %s", discord.version_info)
 print(discord.version_info)
 
@@ -45,27 +44,11 @@ ytdl = yt_dlp.YoutubeDL(ytdl_options)
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume = 0.5):
         super().__init__(source, volume)
-        # self.requester = 
 
         self.data = data
 
         self.title = data.get('title')
         self.url = data.get('url')
-
-    # Pull a URL with ytdl and return an FFmpeg audio source for use with Discord
-    #@classmethod
-    #async def from_url(cls, url, *, loop=None, stream=False):
-    #    loop = loop or asyncio.get_event_loop()
-    #    data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
-
-    #    if 'entries' in data:
-    #       data = data['entries'][0]
-        
-    #   filename = data['url'] if stream else ytdl.prepare_filename(data)
-    #   return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
-
-
-
 
 class MusicBot(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -83,6 +66,7 @@ class MusicBot(discord.Client):
 intents = discord.Intents.default()
 client = MusicBot(intents=intents)
 
+
 # Basic logging - end of setup tasks
 @client.event
 async def on_ready():
@@ -90,12 +74,17 @@ async def on_ready():
     log.info("Discord.py version: %s", discord.version_info)
 
 
+
 async def search_async(query):
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, lambda: _extract(query))
 
+
+
 def _extract(query):
     return ytdl.extract_info(query, download=False)
+
+
 
 # Register commands
 @client.tree.command()
@@ -125,7 +114,6 @@ async def join(interaction : discord.Interaction):
 )
 async def play(interaction: discord.Interaction, query: str):
     """ Plays either a specific URL or the first result from 'query'. """
-    #await interaction.response.send_message(f"Attempting to play {url}")
 
     await interaction.response.defer()
 
@@ -137,27 +125,23 @@ async def play(interaction: discord.Interaction, query: str):
         return
     
     if voice_client is None:
-        #await interaction.followup.send(f'Joining channel "{voice_channel.name}" ...')
         voice_client = await voice_channel.connect()
     elif voice_client.channel != voice_channel:
         await voice_client.move_to(voice_channel)
 
     if validators.url(query):
 
-        queryinfo = ytdl.extract_info(query, )
+        queryinfo = ytdl.extract_info(query, download=False)
+
         audio_url = queryinfo.get('url', None)
-        #print(f'Audio URL: {audio_url}')
         title = queryinfo.get('title', None)
+
     else:
         search_query = "ytsearch1: " + query
 
-        #loop = asyncio.get_running_loop()
-        #results = await loop.run_in_executor(None, ytdl.extract_info(search_query, download=False))
         results = await search_async(search_query)
-        #results = await search_ytdlp_async(search_query, ytdl_options)
         tracks = results.get("entries", [])
-        #print(tracks)
-
+        
         if tracks is None:
             await interaction.response.send_message("No results found for query.")
             return
@@ -168,7 +152,6 @@ async def play(interaction: discord.Interaction, query: str):
 
 
     queue.append((audio_url, title))
-   #print(queue)
 
     if voice_client.is_playing() or voice_client.is_paused():
         await interaction.followup.send(f'Added to queue: {title}')
@@ -176,11 +159,7 @@ async def play(interaction: discord.Interaction, query: str):
         await interaction.followup.send(f"Added to queue: {title}")
         await play_next(voice_client, interaction.channel)
     
-    #if(client.current_vc):
-    #    await interaction.response.send_message(f"Attempting to play {query}")
-    #    player = await YTDLSource.from_url(query, stream=True)
-    #    guild = interaction.guild
-    #    guild.voice_client.play(player, after=lambda e: print(f'Player error: {e}') if e else None)
+
 
 # Pause the current audio stream
 @client.tree.command()
