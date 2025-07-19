@@ -90,7 +90,7 @@ def _extract(query):
 @client.tree.command()
 async def hello(interaction: discord.Interaction):
     """ Says hi back to user """
-    await interaction.response.send_message(f'Hi there, {interaction.user.mention}!')
+    await interaction.response.send_message(f"Hi there, {interaction.user.mention}!")
 
 
 
@@ -133,8 +133,8 @@ async def play(interaction: discord.Interaction, query: str):
 
         queryinfo = ytdl.extract_info(query, download=False)
 
-        audio_url = queryinfo.get('url', None)
-        title = queryinfo.get('title', None)
+        audio_url = queryinfo.get("url", None)
+        title = queryinfo.get("title", "Untitled")
 
     else:
         search_query = "ytsearch1: " + query
@@ -154,7 +154,7 @@ async def play(interaction: discord.Interaction, query: str):
     queue.append((audio_url, title))
 
     if voice_client.is_playing() or voice_client.is_paused():
-        await interaction.followup.send(f'Added to queue: {title}')
+        await interaction.followup.send(f"Added to queue: {title}")
     else:
         await interaction.followup.send(f"Added to queue: {title}")
         await play_next(voice_client, interaction.channel)
